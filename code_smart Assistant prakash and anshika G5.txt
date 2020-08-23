@@ -1,0 +1,409 @@
+from tkinter import *
+import tkinter as tk
+import speech_recognition as sr # recognise speech
+import playsound # to play an audio file
+from gtts import gTTS # google text to speech
+import random
+from time import ctime # get time details
+import webbrowser # open browser
+import ssl
+import certifi
+import time
+import os # to remove created audio files
+from PIL import Image
+import subprocess
+import pyautogui #screenshot
+import pyttsx3
+import bs4 as bs
+import urllib.request
+import smtplib
+import datetime
+import requests
+import urlopen
+from bs4 import BeautifulSoup as soup
+
+
+root = tk.Tk()
+root.geometry('700x600+200+50')
+root.title('Smart Assistant')
+root.iconbitmap('voice assistant.ico.ico')
+root.resizable(False,False)
+root.configure(bg='slateblue')
+
+
+photo = PhotoImage(file='microphone.png').subsample(15,15)
+
+T = tk.Text(root, height=30, width=100,bg='deepskyblue',font =('arial',10,'italic bold'))
+T.place(x=0,y=0)
+scrollbar = Scrollbar(T)
+#scrollbar.place(x= 465,y=100)
+#scrollbar.pack(side = RIGHT, fill = Y)
+
+def sendEmail(to, content):
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.login('sharmaprakash1234321@gmail.com', 'Durgakhanal123@')
+    server.sendmail('sharmaprakash1234321@gmail.com', to, content)
+    server.close()
+
+class person:
+    name = ''
+    def setName(self, name):
+        self.name = name
+
+class asis:
+    name = ''
+    def setName(self, name):
+        self.name = name
+
+
+
+def there_exists(terms):
+    for term in terms:
+        if term in voice_data:
+            return True
+
+def engine_speak(text):
+    printScreen(text)
+    text = str(text)
+    engine.say(text)
+    engine.runAndWait()
+
+def Assistant_speak(text):
+    printScreen1(text)
+    text = str(text)
+    engine.say(text)
+    engine.runAndWait()
+
+
+def only_speak(text):
+    #printScreen(text)
+    text = str(text)
+    engine.say(text)
+    engine.runAndWait()
+
+def printScreen(audio):
+    T.insert(tk.END,"User Speak : "+audio+"\n")
+    return None
+
+def printScreen1(audio):
+    T.insert(tk.END,"Assistant Speak : "+audio+"\n")
+    return None
+
+r = sr.Recognizer() # initialise a recogniser
+# listen for audio and convert it to text:
+def record_audio(ask=""):
+    only_speak("Listining...")
+    with sr.Microphone() as source: # microphone as source
+        if ask:
+            engine_speak(ask)
+        audio = r.listen(source, 5, 5)  # listen for the audio via source
+        print("Done Listening")
+        voice_data = ''
+        try:
+            voice_data = r.recognize_google(audio)  # convert audio to text
+        except sr.UnknownValueError: # error: recognizer does not understand
+            engine_speak('I did not get that')
+        except sr.RequestError:
+            engine_speak('Sorry, the service is down') # error: recognizer is not connected
+        printScreen(voice_data)
+        respond(voice_data)
+        #print(">>", voice_data.lower()) # print what user said
+        #return voice_data.lower()
+
+def record(ask=""):
+    with sr.Microphone() as source: # microphone as source
+        if ask:
+            engine_speak(ask)
+        audio = r.listen(source, 5, 5)  # listen for the audio via source
+        #print("Done Listening")
+        voice_data = ''
+        try:
+            voice_data = r.recognize_google(audio)  # convert audio to text
+        except sr.UnknownValueError: # error: recognizer does not understand
+            engine_speak('I did not get that')
+        except sr.RequestError:
+            engine_speak('Sorry, the service is down') # error: recognizer is not connected
+        printScreen(voice_data)
+        #print(">>", voice_data.lower()) # print what user said
+        return voice_data.lower()
+
+# get string and make a audio file to be played
+#def engine_speak(audio_string):
+#    printScreen(audio_string)
+#    audio_string = str(audio_string)
+#    tts = gTTS(text=audio_string, lang='en') # text to speech(voice)
+#    r = random.randint(1,20000000)
+#    audio_file = 'audio' + str(r) + '.mp3'
+#    tts.save(audio_file) # save as mp3
+#    playsound.playsound(audio_file) # play the audio file
+#    print(asis_obj.name + ":", audio_string) # print what app said
+#    os.remove(audio_file) # remove audio file
+
+def wishMe():
+    hour = int(datetime.datetime.now().hour)
+    if hour>=0 and hour<12:
+        engine_speak("Good Morning!")
+
+    elif hour>=12 and hour<18:
+        engine_speak("Good Afternoon!")
+
+    else:
+        engine_speak("Good Evening!")
+
+    engine_speak("I am Jarvis Sir. Please tell me how may I help you")
+
+def respond(voice_data):
+    voice_data = voice_data.lower()
+    # 1: greeting
+    if("hello jarvis") in voice_data:
+        greetings = ["hey, how can I help you" + person_obj.name, "hey, what's up?" + person_obj.name, "I'm listening" + person_obj.name, "how can I help you?" + person_obj.name, "hello" + person_obj.name]
+        greet = greetings[random.randint(0,len(greetings)-1)]
+        Assistant_speak(greet)
+
+    elif ('hello') in voice_data:
+        day_time = int(strftime('%H'))
+        if day_time < 12:
+            Assistant_speak('Hello Sir. Good morning')
+        elif 12 <= day_time < 18:
+            Assistant_speak('Hello Sir. Good afternoon')
+        else:
+            Assistant_speak('Hello Sir. Good evening')
+
+    # 2: name
+    elif("what is your name" or "what's your name" or "tell me your name") in voice_data:
+        Assistant_speak("my name is jarvis, what's your name?")
+
+    elif ("my name is" or "i am") in voice_data:
+        person_name = voice_data.split("is")[-1].strip()
+        Assistant_speak("okay, i will remember that " + person_name)
+        person_obj.setName(person_name) # remember name in person object
+
+    elif ("your name should be") in voice_data:
+        asis_name = voice_data.split("be")[-1].strip()
+        Assistant_speak("okay, i will remember that my name is " + asis_name)
+        asis_obj.setName(asis_name) # remember name in asis object
+
+    # 3: greeting
+    elif ("how are you" or "how are you doing") in voice_data:
+        Assistant_speak("I'm very well, thanks for asking " + person_obj.name)
+
+    # 4: time
+    elif ("what's the time" or "tell me the time" or "what time is it") in voice_data:
+        time = ctime().split(" ")[3].split(":")[0:2]
+        if time[0] == "00":
+            hours = '12'
+        else:
+            hours = time[0]
+        minutes = time[1]
+        time = hours + " hours and " + minutes + "minutes"
+        Assistant_speak(time)
+
+    # 5: search google
+    elif ("search" or "tell me about") in voice_data:
+        search_term = voice_data.split("search")[-1]
+        url = "https://google.com/search?q=" + search_term
+        webbrowser.get().open(url)
+        Assistant_speak("Here is what I found for" + search_term + "on google")
+
+    # 6: search youtube
+    elif ("youtube" or "open youtube" or "play") in  voice_data:
+        search_term = voice_data.split("play")[-1]
+        webbrowser.open("https://www.youtube.com/results?search_query=" + search_term)
+        #webbrowser.get().open(url)
+        Assistant_speak("Here is what I found for " + search_term + "on youtube")
+
+     #7: get stock price
+    elif ("price of") in voice_data:
+        search_term = voice_data.split("for")[-1]
+        url = "https://google.com/search?q=" + search_term
+        webbrowser.get().open(url)
+        Assistant_speak("Here is what I found for " + search_term + " on google")
+
+
+
+     #8 time table
+    elif ("show my time table") in voice_data:
+        im = Image.open(r"D:\WhatsApp Image 2019-12-26 at 10.51.10 AM.jpeg")
+        im.show()
+
+     #9 weather
+    elif ("weather") in voice_data:
+        search_term = voice_data.split("for")[-1]
+        url = "https://www.google.com/search?sxsrf=ACYBGNSQwMLDByBwdVFIUCbQqya-ET7AAA%3A1578847393212&ei=oUwbXtbXDN-C4-EP-5u82AE&q=weather&oq=weather&gs_l=psy-ab.3..35i39i285i70i256j0i67l4j0i131i67j0i131j0i67l2j0.1630.4591..5475...1.2..2.322.1659.9j5j0j1......0....1..gws-wiz.....10..0i71j35i39j35i362i39._5eSPD47bv8&ved=0ahUKEwiWrJvwwP7mAhVfwTgGHfsNDxsQ4dUDCAs&uact=5"
+        webbrowser.get().open(url)
+        Assistant_speak("Here is what I found for on google")
+
+
+     #10 stone paper scisorrs
+    elif ("game") in voice_data:
+        voice_data = record("choose among rock paper or scissor")
+        moves=["rock", "paper", "scissor"]
+
+        cmove=random.choice(moves)
+        pmove=voice_data
+
+
+        Assistant_speak("The computer chose " + cmove)
+        Assistant_speak("You chose " + pmove)
+        Assistant_speak("hi")
+        if pmove==cmove:
+            Assistant_speak("the match is draw")
+        elif pmove== "rock" and cmove== "scissor":
+            Assistant_speak("Player wins")
+        elif pmove== "rock" and cmove== "paper":
+            Assistant_speak("Computer wins")
+        elif pmove== "paper" and cmove== "rock":
+            Assistant_speak("Player wins")
+        elif pmove== "paper" and cmove== "scissor":
+            Assistant_speak("Computer wins")
+        elif pmove== "scissor" and cmove== "paper":
+            Assistant_speak("Player wins")
+        elif pmove== "scissor" and cmove== "rock":
+            Assistant_speak("Computer wins")
+
+     #11 toss a coin
+    elif ("toss" or "flip" or "coin") in voice_data:
+        moves=["head", "tails"]
+        cmove=random.choice(moves)
+        Assistant_speak("The computer chose " + cmove)
+
+     #12 calc
+    elif ("plus" or "minus" or "multiply" or "divide" or "power" or "+" or "-" or "*" or "/") in voice_data:
+        opr = voice_data.split()[1]
+
+        if opr == '+' or 'plus':
+            Assistant_speak(int(voice_data.split()[0]) + int(voice_data.split()[2]))
+        elif opr == '-' or 'minus':
+            Assistant_speak(int(voice_data.split()[0]) - int(voice_data.split()[2]))
+        elif opr == 'multiply' or '*':
+            Assistant_speak(int(voice_data.split()[0]) * int(voice_data.split()[2]))
+        elif opr == 'divide' or '/':
+            Assistant_speak(int(voice_data.split()[0]) / int(voice_data.split()[2]))
+        elif opr == 'power':
+            Assistant_speak(int(voice_data.split()[0]) ** int(voice_data.split()[2]))
+        else:
+            Assistant_speak("Wrong Operator")
+    
+     #13 screenshot
+    elif ("capture" or "my screen" or "screenshot") in voice_data:
+        myScreenshot = pyautogui.screenshot()
+        myScreenshot.save('D:/screenshot/screen.png')
+    
+
+     #14 to search wikipedia for definition
+    elif ("definition of" or "tell me the definition of") in voice_data:
+        definition=record("what do you need the definition of")
+        url=urllib.request.urlopen('https://en.wikipedia.org/wiki/'+definition)
+        soup=bs.BeautifulSoup(url,'lxml')
+        definitions=[]
+        for paragraph in soup.find_all('p'):
+            definitions.append(str(paragraph.text))
+        if definitions:
+            if definitions[0]:
+                Assistant_speak('im sorry i could not find that definition, please try a web search')
+            elif definitions[1]:
+                Assistant_speak('here is what i found '+definitions[1])
+            else:
+                Assistant_speak('Here is what i found '+definitions[2])
+        else:
+                Assistant_speak("i am sorry i could not find the definition for "+definition)
+
+
+    elif ('email') in voice_data:
+        Assistant_speak('Who is the recipient?')
+        recipient = record()
+        if 'pratibha' in recipient:
+            Assistant_speak('What should I say to him?')
+            content = record()
+            mail = smtplib.SMTP('smtp.gmail.com', 587)
+            mail.ehlo()
+            mail.starttls()
+            mail.login('sharmaprakash1234321@gmail.com', 'Durgakhanal123@')
+            mail.sendmail('sharmaprakash1234321@gmail.com', 'sharmapratibha0123@gmail.com', content)
+            mail.close()
+            Assistant_speak('Email has been sent successfuly. You can check your inbox.')
+        else:
+            Assistant_speak('I don\'t know what you mean!')
+
+    elif ('open website') in voice_data:
+        reg_ex = re.search('open website (.+)', voice_data)
+        if reg_ex:
+            domain = reg_ex.group(1)
+            print(domain)
+            url = 'https://www.' + domain
+            webbrowser.open(url)
+            Assistant_speak('The website you have requested has been opened for you Sir.')
+        else:
+            pass
+
+    elif ('help me') in voice_data:
+        Assistant_speak("""
+        You can use these commands and I'll help you out:
+        1. Open reddit subreddit : Opens the subreddit in default browser.
+        2. Open xyz.com : replace xyz with any website name
+        3. Send email/email : Follow up questions such as recipient name, content will be asked in order.
+        4. Current weather in {cityname} : Tells you the current condition and temperture
+        5. Hello
+        6. play me a video : Plays song in your VLC media player
+        7. change wallpaper : Change desktop wallpaper
+        8. news for today : reads top news of today
+        9. time : Current system time
+        10. top stories from google news (RSS feeds)
+        11. tell me about xyz : tells you about xyz
+        """)
+
+    elif ('joke') in voice_data:
+        res = requests.get(
+                'https://icanhazdadjoke.com/',
+                headers={"Accept":"application/json"})
+        if res.status_code == requests.codes.ok:
+            Assistant_speak(str(res.json()['joke']))
+        else:
+            Assistant_speak('oops!I ran out of jokes')
+
+    elif ('news for today') in voice_data:
+        try:
+            news_url="https://news.google.com/news/rss"
+            Client=urlopen(news_url)
+            xml_page=Client.read()
+            Client.close()
+            soup_page=soup(xml_page,"xml")
+            news_list=soup_page.findAll("item")
+            for news in news_list[:15]:
+                Assistant_speak(news.title.text.encode('utf-8'))
+        except Exception as e:
+                print(e)
+
+    elif ("exit" or "quit" or "goodbye") in voice_data:
+        Assistant_speak("bye")
+        exit()
+
+
+
+time.sleep(1)
+
+person_obj = person()
+asis_obj = asis()
+asis_obj.name = 'Assistant'
+engine = pyttsx3.init()
+
+
+
+#voice_data = record_audio("Recording") # get the voice input
+#print("Done")
+#print("Q:", voice_data)
+#respond(voice_data) # respond
+StartButton = tk.Button(root, image = photo, command = record_audio,bg = 'darkslategray',activebackground = 'purple4',bd = 5)
+StartButton.place(height= 50, width = 80 ,x=250, y=500)
+#Button1 = tk.Button(root,bg = 'green2',text='Play music',font =('arial',10,'italic bold'),bd = 5,activebackground = 'purple4' )
+#Button1.place(height= 50, width = 80 ,x=620, y=150)
+#Button2 = tk.Button(root,bg = 'yellow',text='youtube',font =('arial',10,'italic bold'),bd = 5,activebackground = 'purple4')
+#Button2.place(height= 50, width = 80 ,x=620, y=100)
+#Button3 = tk.Button(root,bg = 'blue',text='google',font =('arial',10,'italic bold'),bd = 5,activebackground = 'purple4')
+#Button3.place(height= 50, width = 80 ,x=620, y=50)
+#Button4 = tk.Button(root,bg = 'deeppink',text='send mail',font =('arial',10,'italic bold'),bd = 5,activebackground = 'purple4')
+#Button4.place(height= 50, width = 80 ,x=620, y=0)
+
+tk.mainloop()
